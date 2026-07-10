@@ -24,6 +24,9 @@ export type RenderParams = {
   // When set (photo-based garments, e.g. Classic Tee), draws this real photo
   // instead of the flat-color vector mockup.
   image?: HTMLImageElement | null;
+  // Renders as a border traced around the letters (like the Line Jacket),
+  // used instead of `outline` for garments with the Letter Style upgrade.
+  backgroundHex?: string | null;
 };
 
 // Matches the real product photos in public/products/line-jacket (640x700)
@@ -194,13 +197,18 @@ function drawLetters(
   ctx.font = params.canvasFont.replace("1em", `${size}px`);
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
+  ctx.lineJoin = "round";
 
-  if (params.outline === "shadow") {
+  if (params.backgroundHex) {
+    // Border traced around the letters, like the Line Jacket's Letter
+    // Background Color, instead of the plain outline/shadow options below.
+    ctx.lineWidth = size * 0.16;
+    ctx.strokeStyle = params.backgroundHex;
+    ctx.strokeText(text, centerX, centerY);
+  } else if (params.outline === "shadow") {
     ctx.fillStyle = "rgba(0,0,0,0.35)";
     ctx.fillText(text, centerX + 3, centerY + 4);
-  }
-
-  if (params.outline === "outline") {
+  } else if (params.outline === "outline") {
     ctx.lineWidth = Math.max(2, size * 0.06);
     ctx.strokeStyle =
       params.letterColorHex.toLowerCase() === "#ffffff" ? "#1c2a4a" : "#ffffff";

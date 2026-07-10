@@ -98,7 +98,7 @@ export const GARMENT_TYPES: GarmentType[] = [
     customization: "standard",
     colorMode: "photo",
     photoColors: TEE_COLORS,
-    sizeUpcharges: { XL: 3, "2XL": 5, "3XL": 7 },
+    sizeUpcharges: { "2XL": 2, "3XL": 2 },
   },
   {
     id: "hoodie",
@@ -278,14 +278,18 @@ export function calculatePrice(garment: GarmentType, size: Size) {
   return garment.basePrice + sizeUpcharge;
 }
 
-export function calculateJacketPrice(
+// Used by any garment that offers the Letter Style (Standard/Old English)
+// upgrade. Stitch style is jacket-only, so it's optional here.
+export function calculateLetterStylePrice(
   garment: GarmentType,
   size: Size,
   letterStyleId: LetterStyleId,
-  stitchStyleId: StitchStyleId
+  stitchStyleId?: StitchStyleId
 ) {
   const sizeUpcharge = garment.sizeUpcharges?.[size] ?? 0;
   const letterStyle = LETTER_STYLES.find((s) => s.id === letterStyleId)!;
-  const stitchStyle = STITCH_STYLES.find((s) => s.id === stitchStyleId)!;
-  return garment.basePrice + sizeUpcharge + letterStyle.price + stitchStyle.price;
+  const stitchStyle = stitchStyleId
+    ? STITCH_STYLES.find((s) => s.id === stitchStyleId)!
+    : undefined;
+  return garment.basePrice + sizeUpcharge + letterStyle.price + (stitchStyle?.price ?? 0);
 }

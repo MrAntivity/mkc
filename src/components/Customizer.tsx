@@ -17,7 +17,7 @@ import {
   GREEK_LETTERS,
   garmentColorChoices,
   calculatePrice,
-  calculateJacketPrice,
+  calculateLetterStylePrice,
   resolveLetterStyleCanvasFont,
   resolveLetterStylePreviewFont,
   type GarmentTypeId,
@@ -167,9 +167,15 @@ export default function Customizer() {
   );
 
   const view = placement === "chest" ? "front" : "back";
-  const price = isLineJacket
-    ? calculateJacketPrice(garment, size, letterStyleId, stitchStyleId)
-    : calculatePrice(garment, size);
+  const price =
+    isLineJacket || isPhotoStandard
+      ? calculateLetterStylePrice(
+          garment,
+          size,
+          letterStyleId,
+          isLineJacket ? stitchStyleId : undefined
+        )
+      : calculatePrice(garment, size);
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
@@ -197,9 +203,10 @@ export default function Customizer() {
         view,
         letters,
         letterColorHex: letterColor.hex,
-        canvasFont: font.canvasFont,
+        canvasFont: resolveLetterStyleCanvasFont(letterStyleId, letters),
         placement,
         outline,
+        backgroundHex: background.hex,
         image,
       });
     } else {
@@ -257,7 +264,7 @@ export default function Customizer() {
           : color.label,
       letters: letters.trim() || "ΑΒΓ",
       letterColorName: letterColor.label,
-      fontLabel: isLineJacket ? letterStyle.label : font.label,
+      fontLabel: isLineJacket || isPhotoStandard ? letterStyle.label : font.label,
       placement: isLineJacket
         ? JACKET_PLACEMENTS.find((p) => p.id === jacketPlacement)!.label
         : PLACEMENTS.find((p) => p.id === placement)!.label,
@@ -266,7 +273,7 @@ export default function Customizer() {
       price,
       previewDataUrl: canvas?.toDataURL("image/png"),
       stitchLabel: isLineJacket ? stitchStyle.label : undefined,
-      backgroundColorName: isLineJacket ? background.label : undefined,
+      backgroundColorName: isLineJacket || isPhotoStandard ? background.label : undefined,
     });
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 2000);
@@ -310,23 +317,23 @@ export default function Customizer() {
             <span className="text-foreground/60">Quantity</span>
             <span className="font-medium">{quantity}</span>
           </div>
+          {(isLineJacket || isPhotoStandard) && (
+            <div className="flex items-center justify-between text-sm mt-1">
+              <span className="text-foreground/60">Letter Style</span>
+              <span className="font-medium">
+                {letterStyle.label}
+                {letterStyle.price > 0 ? ` (+$${letterStyle.price})` : ""}
+              </span>
+            </div>
+          )}
           {isLineJacket && (
-            <>
-              <div className="flex items-center justify-between text-sm mt-1">
-                <span className="text-foreground/60">Letter Style</span>
-                <span className="font-medium">
-                  {letterStyle.label}
-                  {letterStyle.price > 0 ? ` (+$${letterStyle.price})` : ""}
-                </span>
-              </div>
-              <div className="flex items-center justify-between text-sm mt-1">
-                <span className="text-foreground/60">Stitch</span>
-                <span className="font-medium">
-                  {stitchStyle.label}
-                  {stitchStyle.price > 0 ? ` (+$${stitchStyle.price})` : ""}
-                </span>
-              </div>
-            </>
+            <div className="flex items-center justify-between text-sm mt-1">
+              <span className="text-foreground/60">Stitch</span>
+              <span className="font-medium">
+                {stitchStyle.label}
+                {stitchStyle.price > 0 ? ` (+$${stitchStyle.price})` : ""}
+              </span>
+            </div>
           )}
           <div className="mt-4 flex items-center justify-between border-t border-line pt-4">
             <span className="font-display text-lg">Total</span>
@@ -482,7 +489,7 @@ export default function Customizer() {
 
         <section>
           <h2 className="font-display text-lg mb-3">
-            {stepNum()}. Letter {isLineJacket ? "Foreground " : ""}Color
+            {stepNum()}. Letter {isLineJacket || isPhotoStandard ? "Foreground " : ""}Color
           </h2>
           <div className="flex flex-wrap gap-3">
             {LETTER_COLORS.map((c) => (
@@ -500,7 +507,7 @@ export default function Customizer() {
           </div>
         </section>
 
-        {isLineJacket && (
+        {(isLineJacket || isPhotoStandard) && (
           <section>
             <h2 className="font-display text-lg mb-3">{stepNum()}. Letter Background Color</h2>
             <div className="flex flex-wrap gap-3">
@@ -520,7 +527,7 @@ export default function Customizer() {
           </section>
         )}
 
-        {isLineJacket ? (
+        {isLineJacket || isPhotoStandard ? (
           <>
             <section>
               <h2 className="font-display text-lg mb-3">{stepNum()}. Letter Style</h2>
@@ -550,25 +557,27 @@ export default function Customizer() {
               </div>
             </section>
 
-            <section>
-              <h2 className="font-display text-lg mb-3">{stepNum()}. Stitch Style</h2>
-              <div className="grid grid-cols-2 gap-3">
-                {STITCH_STYLES.map((s) => (
-                  <button
-                    key={s.id}
-                    onClick={() => setStitchStyleId(s.id)}
-                    className={`rounded-xl border px-3 py-3 text-sm font-medium transition ${
-                      stitchStyleId === s.id
-                        ? "border-navy bg-navy text-cream"
-                        : "border-line bg-white hover:border-navy/40"
-                    }`}
-                  >
-                    {s.label}
-                    {s.price > 0 ? ` (+$${s.price})` : ""}
-                  </button>
-                ))}
-              </div>
-            </section>
+            {isLineJacket && (
+              <section>
+                <h2 className="font-display text-lg mb-3">{stepNum()}. Stitch Style</h2>
+                <div className="grid grid-cols-2 gap-3">
+                  {STITCH_STYLES.map((s) => (
+                    <button
+                      key={s.id}
+                      onClick={() => setStitchStyleId(s.id)}
+                      className={`rounded-xl border px-3 py-3 text-sm font-medium transition ${
+                        stitchStyleId === s.id
+                          ? "border-navy bg-navy text-cream"
+                          : "border-line bg-white hover:border-navy/40"
+                      }`}
+                    >
+                      {s.label}
+                      {s.price > 0 ? ` (+$${s.price})` : ""}
+                    </button>
+                  ))}
+                </div>
+              </section>
+            )}
           </>
         ) : (
           <section>
