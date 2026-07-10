@@ -12,6 +12,7 @@ import {
   PLACEMENTS,
   JACKET_PLACEMENTS,
   JACKET_COLORS,
+  TEE_COLORS,
   SIZES,
   GREEK_LETTERS,
   garmentColorChoices,
@@ -26,6 +27,7 @@ import {
   type LetterStyleId,
   type StitchStyleId,
   type Size,
+  type PhotoColor,
 } from "@/lib/garments";
 import {
   renderGarment,
@@ -41,16 +43,55 @@ const EXAMPLE_COMBOS = ["ΑΒΓ", "ΔΕΖ", "ΘΙΚ", "ΞΟΠ", "ΣΤΥ"];
 
 // Shared across component instances so each product photo is only fetched
 // once. Rebinding onload per-call lets the latest draw() always fire.
-const jacketImageCache = new Map<string, HTMLImageElement>();
-function getJacketImage(src: string, onLoad: () => void): HTMLImageElement {
-  let img = jacketImageCache.get(src);
+const photoImageCache = new Map<string, HTMLImageElement>();
+function getPhotoImage(src: string, onLoad: () => void): HTMLImageElement {
+  let img = photoImageCache.get(src);
   if (!img) {
     img = new window.Image();
     img.src = src;
-    jacketImageCache.set(src, img);
+    photoImageCache.set(src, img);
   }
   img.onload = onLoad;
   return img;
+}
+
+function PhotoColorSwatches({
+  colors,
+  selectedId,
+  onSelect,
+}: {
+  colors: PhotoColor[];
+  selectedId: string;
+  onSelect: (id: string) => void;
+}) {
+  return (
+    <div className="flex flex-wrap gap-3">
+      {colors.map((c) => (
+        <button
+          key={c.id}
+          onClick={() => onSelect(c.id)}
+          title={c.label}
+          className="flex w-16 flex-col items-center gap-1"
+        >
+          <span
+            aria-label={c.label}
+            className={`h-12 w-12 rounded-full border-2 bg-cover bg-center transition ${
+              selectedId === c.id ? "border-gold scale-110" : "border-line"
+            }`}
+            style={{
+              backgroundImage: `url(${c.image})`,
+              backgroundColor: c.swatchHex,
+              backgroundPosition: "center 15%",
+              backgroundSize: "250%",
+            }}
+          />
+          <span className="text-center text-[11px] leading-tight text-foreground/60">
+            {c.label}
+          </span>
+        </button>
+      ))}
+    </div>
+  );
 }
 
 export default function Customizer() {
@@ -60,6 +101,7 @@ export default function Customizer() {
   const [garmentTypeId, setGarmentTypeId] = useState<GarmentTypeId>("hoodie");
   const [colorId, setColorId] = useState("navy");
   const [jacketColorId, setJacketColorId] = useState(JACKET_COLORS[0].id);
+  const [teeColorId, setTeeColorId] = useState(TEE_COLORS[0].id);
   const [letters, setLetters] = useState("ΑΒΓ");
   const [letterColorId, setLetterColorId] = useState(LETTER_COLORS[0].id);
   const [backgroundColorId, setBackgroundColorId] = useState("none");
@@ -78,6 +120,7 @@ export default function Customizer() {
     [garmentTypeId]
   );
   const isLineJacket = garment.customization === "lineJacket";
+  const isPhotoStandard = garment.colorMode === "photo" && !isLineJacket;
 
   const colorChoices = useMemo(() => garmentColorChoices(garment), [garment]);
   const color = useMemo(
@@ -96,6 +139,10 @@ export default function Customizer() {
   const jacketColor = useMemo(
     () => JACKET_COLORS.find((c) => c.id === jacketColorId) ?? JACKET_COLORS[0],
     [jacketColorId]
+  );
+  const teeColor = useMemo(
+    () => TEE_COLORS.find((c) => c.id === teeColorId) ?? TEE_COLORS[0],
+    [teeColorId]
   );
 
   const letterColor = useMemo(
@@ -131,7 +178,7 @@ export default function Customizer() {
     if (!ctx) return;
 
     if (isLineJacket) {
-      const image = getJacketImage(jacketColor.image, draw);
+      const image = getPhotoImage(jacketColor.image, draw);
       renderLineJacket(ctx, {
         image,
         letters,
@@ -140,6 +187,20 @@ export default function Customizer() {
         canvasFont: resolveLetterStyleCanvasFont(letterStyleId, letters),
         placement: jacketPlacement,
         stitch: stitchStyleId,
+      });
+    } else if (isPhotoStandard) {
+      const image = getPhotoImage(teeColor.image, draw);
+      renderGarment(ctx, {
+        garmentType: garmentTypeId,
+        colorHex: teeColor.swatchHex,
+        shadowHex: teeColor.swatchHex,
+        view,
+        letters,
+        letterColorHex: letterColor.hex,
+        canvasFont: font.canvasFont,
+        placement,
+        outline,
+        image,
       });
     } else {
       renderGarment(ctx, {
@@ -156,9 +217,11 @@ export default function Customizer() {
     }
   }, [
     isLineJacket,
+    isPhotoStandard,
     garmentTypeId,
     color,
     jacketColor,
+    teeColor,
     letters,
     letterColor,
     background,
@@ -187,7 +250,11 @@ export default function Customizer() {
     const canvas = canvasRef.current;
     addLine({
       garmentName: garment.label,
-      garmentColorName: isLineJacket ? jacketColor.label : color.label,
+      garmentColorName: isLineJacket
+        ? jacketColor.label
+        : isPhotoStandard
+          ? teeColor.label
+          : color.label,
       letters: letters.trim() || "ΑΒΓ",
       letterColorName: letterColor.label,
       fontLabel: isLineJacket ? letterStyle.label : font.label,
@@ -303,38 +370,34 @@ export default function Customizer() {
 
         <section>
           <h2 className="font-display text-lg mb-3">{stepNum()}. Garment Color</h2>
-          <div className="flex flex-wrap gap-3">
-            {isLineJacket
-              ? JACKET_COLORS.map((c) => (
-                  <button
-                    key={c.id}
-                    onClick={() => setJacketColorId(c.id)}
-                    title={c.label}
-                    aria-label={c.label}
-                    className={`h-12 w-12 rounded-full border-2 bg-cover bg-center transition ${
-                      jacketColorId === c.id ? "border-gold scale-110" : "border-line"
-                    }`}
-                    style={{
-                      backgroundImage: `url(${c.image})`,
-                      backgroundColor: c.swatchHex,
-                      backgroundPosition: "center 15%",
-                      backgroundSize: "250%",
-                    }}
-                  />
-                ))
-              : colorChoices.map((c) => (
-                  <button
-                    key={c.id}
-                    onClick={() => setColorId(c.id)}
-                    title={c.label}
-                    aria-label={c.label}
-                    className={`h-10 w-10 rounded-full border-2 transition ${
-                      colorId === c.id ? "border-gold scale-110" : "border-line"
-                    }`}
-                    style={{ backgroundColor: c.hex }}
-                  />
-                ))}
-          </div>
+          {isLineJacket ? (
+            <PhotoColorSwatches
+              colors={JACKET_COLORS}
+              selectedId={jacketColorId}
+              onSelect={setJacketColorId}
+            />
+          ) : isPhotoStandard ? (
+            <PhotoColorSwatches
+              colors={TEE_COLORS}
+              selectedId={teeColorId}
+              onSelect={setTeeColorId}
+            />
+          ) : (
+            <div className="flex flex-wrap gap-3">
+              {colorChoices.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => setColorId(c.id)}
+                  title={c.label}
+                  aria-label={c.label}
+                  className={`h-10 w-10 rounded-full border-2 transition ${
+                    colorId === c.id ? "border-gold scale-110" : "border-line"
+                  }`}
+                  style={{ backgroundColor: c.hex }}
+                />
+              ))}
+            </div>
+          )}
         </section>
 
         <section>

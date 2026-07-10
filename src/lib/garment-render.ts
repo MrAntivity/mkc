@@ -21,6 +21,9 @@ export type RenderParams = {
   canvasFont: string;
   placement: Placement;
   outline: LetterOutline;
+  // When set (photo-based garments, e.g. Classic Tee), draws this real photo
+  // instead of the flat-color vector mockup.
+  image?: HTMLImageElement | null;
 };
 
 // Matches the real product photos in public/products/line-jacket (640x700)
@@ -211,47 +214,60 @@ function drawLetters(
 export function renderGarment(ctx: CanvasRenderingContext2D, params: RenderParams) {
   ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-  // grounding shadow
-  ctx.save();
-  ctx.fillStyle = "rgba(15,24,48,0.08)";
-  ctx.beginPath();
-  ctx.ellipse(CX, 600, 150, 18, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
+  if (params.image) {
+    // Photo-based garment (e.g. Classic Tee): draw the real product photo
+    // instead of the vector mockup. There's only a front photo, so both
+    // chest and back placement composite onto the same image.
+    if (params.image.complete && params.image.naturalWidth > 0) {
+      ctx.drawImage(params.image, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    }
+  } else {
+    // grounding shadow
+    ctx.save();
+    ctx.fillStyle = "rgba(15,24,48,0.08)";
+    ctx.beginPath();
+    ctx.ellipse(CX, 600, 150, 18, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
 
-  const sleeve = params.garmentType === "tee" ? "short" : "long";
-  const isHoodie = params.garmentType === "hoodie";
-  const isQuarterZip = params.garmentType === "quarterZip";
-  const isCrew = params.garmentType === "crewneck";
+    const sleeve = params.garmentType === "tee" ? "short" : "long";
+    const isHoodie = params.garmentType === "hoodie";
+    const isQuarterZip = params.garmentType === "quarterZip";
+    const isCrew = params.garmentType === "crewneck";
 
-  if (isHoodie) drawHood(ctx, params.colorHex, params.shadowHex);
+    if (isHoodie) drawHood(ctx, params.colorHex, params.shadowHex);
 
-  const path = bodyPath(sleeve);
+    const path = bodyPath(sleeve);
 
-  // shading gradient for fabric depth
-  const gradient = ctx.createLinearGradient(0, 90, 0, CANVAS_HEIGHT);
-  gradient.addColorStop(0, params.colorHex);
-  gradient.addColorStop(1, params.shadowHex);
-  ctx.save();
-  ctx.fillStyle = gradient;
-  ctx.fill(path);
-  ctx.lineWidth = 3;
-  ctx.strokeStyle = "rgba(0,0,0,0.25)";
-  ctx.stroke(path);
-  ctx.restore();
+    // shading gradient for fabric depth
+    const gradient = ctx.createLinearGradient(0, 90, 0, CANVAS_HEIGHT);
+    gradient.addColorStop(0, params.colorHex);
+    gradient.addColorStop(1, params.shadowHex);
+    ctx.save();
+    ctx.fillStyle = gradient;
+    ctx.fill(path);
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = "rgba(0,0,0,0.25)";
+    ctx.stroke(path);
+    ctx.restore();
 
-  if (params.view === "front") {
-    if (isCrew) drawRibKnit(ctx, params.shadowHex);
-    if (isQuarterZip) drawZipper(ctx, params.shadowHex);
-    if (isHoodie) {
-      drawDrawstrings(ctx, params.shadowHex);
-      drawPocket(ctx, params.shadowHex);
+    if (params.view === "front") {
+      if (isCrew) drawRibKnit(ctx, params.shadowHex);
+      if (isQuarterZip) drawZipper(ctx, params.shadowHex);
+      if (isHoodie) {
+        drawDrawstrings(ctx, params.shadowHex);
+        drawPocket(ctx, params.shadowHex);
+      }
     }
   }
 
   // letters
   if (params.view === "front" && params.placement === "chest") {
-    drawLetters(ctx, params, 200, 230, 130, 64);
+    if (params.image) {
+      drawLetters(ctx, params, 146, 195, 120, 60);
+    } else {
+      drawLetters(ctx, params, 200, 230, 130, 64);
+    }
   } else if (params.view === "back" && params.placement === "back") {
     drawLetters(ctx, params, CX, 320, 300, 120);
   }

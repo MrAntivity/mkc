@@ -5,6 +5,72 @@ export type GarmentTypeId = "tee" | "hoodie" | "crewneck" | "quarterZip" | "line
 
 export type CustomizationMode = "standard" | "lineJacket";
 
+export type PhotoColor = {
+  id: string;
+  label: string;
+  // Small hex used for the color-swatch button; the real photo is used for
+  // the actual live preview.
+  swatchHex: string;
+  image: string;
+};
+
+// Real product photography, one per color (public/products/line-jacket).
+export const JACKET_COLORS: PhotoColor[] = [
+  { id: "black", label: "Black", swatchHex: "#1c1c1c", image: "/products/line-jacket/black.jpg" },
+  { id: "navy", label: "Navy", swatchHex: "#1c2a4a", image: "/products/line-jacket/navy.jpg" },
+  { id: "royalBlue", label: "Royal Blue", swatchHex: "#1e3fae", image: "/products/line-jacket/royal-blue.jpg" },
+  { id: "columbiaBlue", label: "Columbia Blue", swatchHex: "#9fc6e0", image: "/products/line-jacket/columbia-blue.jpg" },
+  { id: "maroon", label: "Maroon", swatchHex: "#6c1f2c", image: "/products/line-jacket/maroon.jpg" },
+  { id: "red", label: "Red", swatchHex: "#b31f24", image: "/products/line-jacket/red.jpg" },
+  { id: "purple", label: "Purple", swatchHex: "#4b2e83", image: "/products/line-jacket/purple.jpg" },
+  { id: "darkGreen", label: "Dark Green", swatchHex: "#1f3d2b", image: "/products/line-jacket/dark-green.jpg" },
+  { id: "gold", label: "Gold", swatchHex: "#c9a227", image: "/products/line-jacket/gold.jpg" },
+  { id: "khaki", label: "Khaki", swatchHex: "#c3b091", image: "/products/line-jacket/khaki.jpg" },
+  { id: "graphite", label: "Graphite", swatchHex: "#4b4b4d", image: "/products/line-jacket/graphite.jpg" },
+  { id: "brown", label: "Brown", swatchHex: "#4b3621", image: "/products/line-jacket/brown.jpg" },
+  { id: "lightPink", label: "Light Pink", swatchHex: "#f0b8c8", image: "/products/line-jacket/light-pink.jpg" },
+  { id: "white", label: "White", swatchHex: "#f5f5f0", image: "/products/line-jacket/white.jpg" },
+].map((c) => ({ ...c, image: withBasePath(c.image) }));
+
+// Real product photography, one per color (public/products/classic-tee).
+export const TEE_COLORS: PhotoColor[] = [
+  { id: "ashGrey", label: "Ash Grey", swatchHex: "#b2beb5", image: "/products/classic-tee/ash-grey.jpg" },
+  { id: "black", label: "Black", swatchHex: "#1a1a1a", image: "/products/classic-tee/black.jpg" },
+  { id: "cardinalRed", label: "Cardinal Red", swatchHex: "#8c1515", image: "/products/classic-tee/cardinal-red.jpg" },
+  { id: "carolinaBlue", label: "Carolina Blue", swatchHex: "#7bafd4", image: "/products/classic-tee/carolina-blue.jpg" },
+  { id: "charcoal", label: "Charcoal", swatchHex: "#36454f", image: "/products/classic-tee/charcoal.jpg" },
+  { id: "cornsilk", label: "Cornsilk", swatchHex: "#fff8dc", image: "/products/classic-tee/cornsilk.jpg" },
+  { id: "daisy", label: "Daisy", swatchHex: "#ffed4e", image: "/products/classic-tee/daisy.jpg" },
+  { id: "darkChocolate", label: "Dark Chocolate", swatchHex: "#3c2415", image: "/products/classic-tee/dark-chocolate.jpg" },
+  { id: "darkHeather", label: "Dark Heather", swatchHex: "#454545", image: "/products/classic-tee/dark-heather.jpg" },
+  { id: "forestGreen", label: "Forest Green", swatchHex: "#228b22", image: "/products/classic-tee/forest-green.jpg" },
+  { id: "gold", label: "Gold", swatchHex: "#c9a227", image: "/products/classic-tee/gold.jpg" },
+  { id: "graphiteHeather", label: "Graphite Heather", swatchHex: "#4b4b4d", image: "/products/classic-tee/graphite-heather.jpg" },
+  { id: "gravel", label: "Gravel", swatchHex: "#7c7c72", image: "/products/classic-tee/gravel.jpg" },
+  { id: "iceGrey", label: "Ice Grey", swatchHex: "#d6d6d6", image: "/products/classic-tee/ice-grey.jpg" },
+  { id: "indigoBlue", label: "Indigo Blue", swatchHex: "#4b5aa4", image: "/products/classic-tee/indigo-blue.jpg" },
+  { id: "kiwi", label: "Kiwi", swatchHex: "#8dc63f", image: "/products/classic-tee/kiwi.jpg" },
+  { id: "lightBlue", label: "Light Blue", swatchHex: "#add8e6", image: "/products/classic-tee/light-blue.jpg" },
+  { id: "lightPink", label: "Light Pink", swatchHex: "#f0b8c8", image: "/products/classic-tee/light-pink.jpg" },
+  { id: "lilac", label: "Lilac", swatchHex: "#c8a2c8", image: "/products/classic-tee/lilac.jpg" },
+  { id: "maroon", label: "Maroon", swatchHex: "#6c1f2c", image: "/products/classic-tee/maroon.jpg" },
+  { id: "militaryGreen", label: "Military Green", swatchHex: "#4b5320", image: "/products/classic-tee/military-green.jpg" },
+  { id: "mintGreen", label: "Mint Green", swatchHex: "#98ff98", image: "/products/classic-tee/mint-green.jpg" },
+  { id: "navy", label: "Navy", swatchHex: "#1c2a4a", image: "/products/classic-tee/navy.jpg" },
+  { id: "oldGold", label: "Old Gold", swatchHex: "#cfb53b", image: "/products/classic-tee/old-gold.jpg" },
+  { id: "orange", label: "Orange", swatchHex: "#ffa500", image: "/products/classic-tee/orange.jpg" },
+  { id: "purple", label: "Purple", swatchHex: "#4b2e83", image: "/products/classic-tee/purple.jpg" },
+  { id: "red", label: "Red", swatchHex: "#b31f24", image: "/products/classic-tee/red.jpg" },
+  { id: "royal", label: "Royal", swatchHex: "#1e3fae", image: "/products/classic-tee/royal.jpg" },
+  { id: "sand", label: "Sand", swatchHex: "#c2b280", image: "/products/classic-tee/sand.jpg" },
+  { id: "sapphire", label: "Sapphire", swatchHex: "#0f52ba", image: "/products/classic-tee/sapphire.jpg" },
+  { id: "sky", label: "Sky", swatchHex: "#87ceeb", image: "/products/classic-tee/sky.jpg" },
+  { id: "sportGrey", label: "Sport Grey", swatchHex: "#9ea0a1", image: "/products/classic-tee/sport-grey.jpg" },
+  { id: "texasOrange", label: "Texas Orange", swatchHex: "#bf5700", image: "/products/classic-tee/texas-orange.jpg" },
+  { id: "violet", label: "Violet", swatchHex: "#925fc6", image: "/products/classic-tee/violet.jpg" },
+  { id: "white", label: "White", swatchHex: "#f5f5f0", image: "/products/classic-tee/white.jpg" },
+].map((c) => ({ ...c, image: withBasePath(c.image) }));
+
 export type GarmentType = {
   id: GarmentTypeId;
   label: string;
@@ -15,6 +81,10 @@ export type GarmentType = {
   customization: CustomizationMode;
   // Restricts the color swatches shown for this garment. Omit for "all colors".
   colorIds?: string[];
+  // "photo" garments use real product photography (photoColors) instead of
+  // the flat-color vector mockup.
+  colorMode?: "vector" | "photo";
+  photoColors?: PhotoColor[];
   // Per-size upcharge, added to basePrice. Sizes not listed cost +$0.
   sizeUpcharges?: Partial<Record<Size, number>>;
 };
@@ -26,6 +96,8 @@ export const GARMENT_TYPES: GarmentType[] = [
     basePrice: 24,
     shopifyProductHandle: "custom-greek-tee",
     customization: "standard",
+    colorMode: "photo",
+    photoColors: TEE_COLORS,
     sizeUpcharges: { XL: 3, "2XL": 5, "3XL": 7 },
   },
   {
@@ -58,36 +130,11 @@ export const GARMENT_TYPES: GarmentType[] = [
     basePrice: 45,
     shopifyProductHandle: "custom-greek-line-jacket",
     customization: "lineJacket",
+    colorMode: "photo",
+    photoColors: JACKET_COLORS,
     sizeUpcharges: { "2XL": 2, "3XL": 2 },
   },
 ];
-
-export type JacketColor = {
-  id: string;
-  label: string;
-  // Small hex used for the color-swatch button; the real photo is used for
-  // the actual live preview.
-  swatchHex: string;
-  image: string;
-};
-
-// Real product photography, one per color (public/products/line-jacket).
-export const JACKET_COLORS: JacketColor[] = [
-  { id: "black", label: "Black", swatchHex: "#1c1c1c", image: "/products/line-jacket/black.jpg" },
-  { id: "navy", label: "Navy", swatchHex: "#1c2a4a", image: "/products/line-jacket/navy.jpg" },
-  { id: "royalBlue", label: "Royal Blue", swatchHex: "#1e3fae", image: "/products/line-jacket/royal-blue.jpg" },
-  { id: "columbiaBlue", label: "Columbia Blue", swatchHex: "#9fc6e0", image: "/products/line-jacket/columbia-blue.jpg" },
-  { id: "maroon", label: "Maroon", swatchHex: "#6c1f2c", image: "/products/line-jacket/maroon.jpg" },
-  { id: "red", label: "Red", swatchHex: "#b31f24", image: "/products/line-jacket/red.jpg" },
-  { id: "purple", label: "Purple", swatchHex: "#4b2e83", image: "/products/line-jacket/purple.jpg" },
-  { id: "darkGreen", label: "Dark Green", swatchHex: "#1f3d2b", image: "/products/line-jacket/dark-green.jpg" },
-  { id: "gold", label: "Gold", swatchHex: "#c9a227", image: "/products/line-jacket/gold.jpg" },
-  { id: "khaki", label: "Khaki", swatchHex: "#c3b091", image: "/products/line-jacket/khaki.jpg" },
-  { id: "graphite", label: "Graphite", swatchHex: "#4b4b4d", image: "/products/line-jacket/graphite.jpg" },
-  { id: "brown", label: "Brown", swatchHex: "#4b3621", image: "/products/line-jacket/brown.jpg" },
-  { id: "lightPink", label: "Light Pink", swatchHex: "#f0b8c8", image: "/products/line-jacket/light-pink.jpg" },
-  { id: "white", label: "White", swatchHex: "#f5f5f0", image: "/products/line-jacket/white.jpg" },
-].map((c) => ({ ...c, image: withBasePath(c.image) }));
 
 export type GarmentColor = {
   id: string;
