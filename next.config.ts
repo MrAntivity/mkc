@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const isGithubPages = process.env.GITHUB_PAGES === "true";
+const basePath = isGithubPages ? "/mkc" : "";
 
 const nextConfig: NextConfig = {
   turbopack: {
@@ -10,7 +11,7 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
-  basePath: isGithubPages ? "/mkc" : undefined,
+  basePath: basePath || undefined,
   assetPrefix: isGithubPages ? "/mkc/" : undefined,
 };
 

@@ -1,4 +1,5 @@
 import { oldEnglishFont, oldEnglishGreekFont, standardLetterFont } from "./fonts";
+import { withBasePath } from "./base-path";
 
 export type GarmentTypeId = "tee" | "hoodie" | "crewneck" | "quarterZip" | "lineJacket";
 
@@ -86,7 +87,7 @@ export const JACKET_COLORS: JacketColor[] = [
   { id: "brown", label: "Brown", swatchHex: "#4b3621", image: "/products/line-jacket/brown.jpg" },
   { id: "lightPink", label: "Light Pink", swatchHex: "#f0b8c8", image: "/products/line-jacket/light-pink.jpg" },
   { id: "white", label: "White", swatchHex: "#f5f5f0", image: "/products/line-jacket/white.jpg" },
-];
+].map((c) => ({ ...c, image: withBasePath(c.image) }));
 
 export type GarmentColor = {
   id: string;
