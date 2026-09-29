@@ -42,16 +42,15 @@ import { useCart } from "@/lib/cart-context";
 const EXAMPLE_COMBOS = ["ΑΒΓ", "ΔΕΖ", "ΘΙΚ", "ΞΟΠ", "ΣΤΥ"];
 
 // Shared across component instances so each product photo is only fetched
-// once. Rebinding onload per-call lets the latest draw() always fire.
+// once. The drawing effect owns and cleans up its image-load listeners.
 const photoImageCache = new Map<string, HTMLImageElement>();
-function getPhotoImage(src: string, onLoad: () => void): HTMLImageElement {
+function getPhotoImage(src: string): HTMLImageElement {
   let img = photoImageCache.get(src);
   if (!img) {
     img = new window.Image();
     img.src = src;
     photoImageCache.set(src, img);
   }
-  img.onload = onLoad;
   return img;
 }
 
@@ -94,11 +93,16 @@ function PhotoColorSwatches({
   );
 }
 
-export default function Customizer() {
+export default function Customizer({
+  initialGarment = "lineJacket",
+}: {
+  initialGarment?: GarmentTypeId;
+}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { addLine } = useCart();
 
-  const [garmentTypeId, setGarmentTypeId] = useState<GarmentTypeId>("hoodie");
+  const [garmentTypeId, setGarmentTypeId] =
+    useState<GarmentTypeId>(initialGarment);
   const [colorId, setColorId] = useState("navy");
   const [jacketColorId, setJacketColorId] = useState(JACKET_COLORS[0].id);
   const [teeColorId, setTeeColorId] = useState(TEE_COLORS[0].id);
@@ -107,7 +111,8 @@ export default function Customizer() {
   const [backgroundColorId, setBackgroundColorId] = useState("none");
   const [fontId, setFontId] = useState(LETTER_FONTS[0].id);
   const [placement, setPlacement] = useState<Placement>("chest");
-  const [jacketPlacement, setJacketPlacement] = useState<JacketPlacement>("left");
+  const [jacketPlacement, setJacketPlacement] =
+    useState<JacketPlacement>("left");
   const [outline, setOutline] = useState<LetterOutline>("outline");
   const [letterStyleId, setLetterStyleId] = useState<LetterStyleId>("standard");
   const [stitchStyleId, setStitchStyleId] = useState<StitchStyleId>("cross");
@@ -117,7 +122,7 @@ export default function Customizer() {
 
   const garment = useMemo(
     () => GARMENT_TYPES.find((g) => g.id === garmentTypeId)!,
-    [garmentTypeId]
+    [garmentTypeId],
   );
   const isLineJacket = garment.customization === "lineJacket";
   const isPhotoStandard = garment.colorMode === "photo" && !isLineJacket;
@@ -125,45 +130,37 @@ export default function Customizer() {
   const colorChoices = useMemo(() => garmentColorChoices(garment), [garment]);
   const color = useMemo(
     () => colorChoices.find((c) => c.id === colorId) ?? colorChoices[0],
-    [colorChoices, colorId]
+    [colorChoices, colorId],
   );
-
-  // Keep the selected color valid when switching to a garment with a
-  // restricted palette (e.g. the Line Jacket doesn't offer Cream).
-  useEffect(() => {
-    if (!colorChoices.some((c) => c.id === colorId)) {
-      setColorId(colorChoices[0].id);
-    }
-  }, [colorChoices, colorId]);
 
   const jacketColor = useMemo(
     () => JACKET_COLORS.find((c) => c.id === jacketColorId) ?? JACKET_COLORS[0],
-    [jacketColorId]
+    [jacketColorId],
   );
   const teeColor = useMemo(
     () => TEE_COLORS.find((c) => c.id === teeColorId) ?? TEE_COLORS[0],
-    [teeColorId]
+    [teeColorId],
   );
 
   const letterColor = useMemo(
     () => LETTER_COLORS.find((c) => c.id === letterColorId)!,
-    [letterColorId]
+    [letterColorId],
   );
   const background = useMemo(
     () => LETTER_BACKGROUNDS.find((c) => c.id === backgroundColorId)!,
-    [backgroundColorId]
+    [backgroundColorId],
   );
   const font = useMemo(
     () => LETTER_FONTS.find((f) => f.id === fontId)!,
-    [fontId]
+    [fontId],
   );
   const letterStyle = useMemo(
     () => LETTER_STYLES.find((s) => s.id === letterStyleId)!,
-    [letterStyleId]
+    [letterStyleId],
   );
   const stitchStyle = useMemo(
     () => STITCH_STYLES.find((s) => s.id === stitchStyleId)!,
-    [stitchStyleId]
+    [stitchStyleId],
   );
 
   const view = placement === "chest" ? "front" : "back";
@@ -173,7 +170,7 @@ export default function Customizer() {
           garment,
           size,
           letterStyleId,
-          isLineJacket ? stitchStyleId : undefined
+          isLineJacket ? stitchStyleId : undefined,
         )
       : calculatePrice(garment, size);
 
@@ -184,7 +181,7 @@ export default function Customizer() {
     if (!ctx) return;
 
     if (isLineJacket) {
-      const image = getPhotoImage(jacketColor.image, draw);
+      const image = getPhotoImage(jacketColor.image);
       renderLineJacket(ctx, {
         image,
         letters,
@@ -195,7 +192,7 @@ export default function Customizer() {
         stitch: stitchStyleId,
       });
     } else if (isPhotoStandard) {
-      const image = getPhotoImage(teeColor.image, draw);
+      const image = getPhotoImage(teeColor.image);
       renderGarment(ctx, {
         garmentType: garmentTypeId,
         colorHex: teeColor.swatchHex,
@@ -233,7 +230,7 @@ export default function Customizer() {
     letterColor,
     background,
     font,
-    letterStyle,
+    letterStyleId,
     placement,
     jacketPlacement,
     outline,
@@ -242,16 +239,24 @@ export default function Customizer() {
   ]);
 
   useEffect(() => {
+    let active = true;
+    const redraw = () => {
+      if (active) draw();
+    };
+    const photo = isLineJacket
+      ? getPhotoImage(jacketColor.image)
+      : isPhotoStandard
+        ? getPhotoImage(teeColor.image)
+        : null;
+    photo?.addEventListener("load", redraw);
     draw();
-  }, [draw]);
-
-  // The Old English font loads asynchronously; redraw once it's ready so the
-  // canvas doesn't get stuck showing the fallback font.
-  const drawRef = useRef(draw);
-  drawRef.current = draw;
-  useEffect(() => {
-    document.fonts?.ready?.then(() => drawRef.current());
-  }, []);
+    // Letter fonts can finish loading after the first canvas render.
+    document.fonts?.ready.then(redraw);
+    return () => {
+      active = false;
+      photo?.removeEventListener("load", redraw);
+    };
+  }, [draw, isLineJacket, isPhotoStandard, jacketColor.image, teeColor.image]);
 
   const handleAddToBag = () => {
     const canvas = canvasRef.current;
@@ -264,7 +269,8 @@ export default function Customizer() {
           : color.label,
       letters: letters.trim() || "ΑΒΓ",
       letterColorName: letterColor.label,
-      fontLabel: isLineJacket || isPhotoStandard ? letterStyle.label : font.label,
+      fontLabel:
+        isLineJacket || isPhotoStandard ? letterStyle.label : font.label,
       placement: isLineJacket
         ? JACKET_PLACEMENTS.find((p) => p.id === jacketPlacement)!.label
         : PLACEMENTS.find((p) => p.id === placement)!.label,
@@ -273,7 +279,8 @@ export default function Customizer() {
       price,
       previewDataUrl: canvas?.toDataURL("image/png"),
       stitchLabel: isLineJacket ? stitchStyle.label : undefined,
-      backgroundColorName: isLineJacket || isPhotoStandard ? background.label : undefined,
+      backgroundColorName:
+        isLineJacket || isPhotoStandard ? background.label : undefined,
     });
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 2000);
@@ -288,7 +295,7 @@ export default function Customizer() {
   const stepNum = () => ++step;
 
   return (
-    <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr]">
+    <div className="design-workspace grid gap-10 lg:grid-cols-[1.1fr_1fr]">
       {/* Live preview */}
       <div className="lg:sticky lg:top-24 lg:self-start">
         <div className="rounded-2xl border border-line bg-white p-6 shadow-sm">
@@ -300,7 +307,12 @@ export default function Customizer() {
             aria-label="Live preview of your custom apparel"
           />
           <p className="mt-3 text-center text-xs uppercase tracking-wide text-foreground/50">
-            {isLineJacket ? "Front View" : view === "front" ? "Front View" : "Back View"} · Updates live as you customize
+            {isLineJacket
+              ? "Front View"
+              : view === "front"
+                ? "Front View"
+                : "Back View"}{" "}
+            · Updates live as you customize
           </p>
         </div>
 
@@ -343,12 +355,14 @@ export default function Customizer() {
           </div>
           <button
             onClick={handleAddToBag}
+            aria-live="polite"
             className="mt-4 w-full rounded-full bg-navy py-3 text-sm font-semibold uppercase tracking-wide text-cream transition hover:bg-navy-light"
           >
             {justAdded ? "Added to Bag ✓" : "Add to Bag"}
           </button>
           <p className="mt-3 text-center text-xs text-foreground/40">
-            Checkout connects to Shopify once your store is linked.
+            Design preview only. Ordering is available through the original MKC
+            store.
           </p>
         </div>
       </div>
@@ -356,7 +370,9 @@ export default function Customizer() {
       {/* Controls */}
       <div className="space-y-8">
         <section>
-          <h2 className="font-display text-lg mb-3">{stepNum()}. Choose Garment</h2>
+          <h2 className="font-display text-lg mb-3">
+            {stepNum()}. Choose Garment
+          </h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {GARMENT_TYPES.map((g) => (
               <button
@@ -376,7 +392,9 @@ export default function Customizer() {
         </section>
 
         <section>
-          <h2 className="font-display text-lg mb-3">{stepNum()}. Garment Color</h2>
+          <h2 className="font-display text-lg mb-3">
+            {stepNum()}. Garment Color
+          </h2>
           {isLineJacket ? (
             <PhotoColorSwatches
               colors={JACKET_COLORS}
@@ -398,7 +416,7 @@ export default function Customizer() {
                   title={c.label}
                   aria-label={c.label}
                   className={`h-10 w-10 rounded-full border-2 transition ${
-                    colorId === c.id ? "border-gold scale-110" : "border-line"
+                    color.id === c.id ? "border-gold scale-110" : "border-line"
                   }`}
                   style={{ backgroundColor: c.hex }}
                 />
@@ -441,8 +459,11 @@ export default function Customizer() {
         </section>
 
         <section>
-          <h2 className="font-display text-lg mb-3">{stepNum()}. Your Letters</h2>
+          <h2 className="font-display text-lg mb-3">
+            {stepNum()}. Your Letters
+          </h2>
           <input
+            aria-label="Your Greek letters"
             value={letters}
             onChange={(e) =>
               setLetters(e.target.value.slice(0, isLineJacket ? 4 : 6))
@@ -472,7 +493,9 @@ export default function Customizer() {
             {EXAMPLE_COMBOS.map((combo) => (
               <button
                 key={combo}
-                onClick={() => setLetters(isLineJacket ? combo.slice(0, 4) : combo)}
+                onClick={() =>
+                  setLetters(isLineJacket ? combo.slice(0, 4) : combo)
+                }
                 className="rounded-full border border-line px-3 py-1 hover:border-navy/40"
               >
                 {combo}
@@ -489,7 +512,8 @@ export default function Customizer() {
 
         <section>
           <h2 className="font-display text-lg mb-3">
-            {stepNum()}. Letter {isLineJacket || isPhotoStandard ? "Foreground " : ""}Color
+            {stepNum()}. Letter{" "}
+            {isLineJacket || isPhotoStandard ? "Foreground " : ""}Color
           </h2>
           <div className="flex flex-wrap gap-3">
             {LETTER_COLORS.map((c) => (
@@ -499,7 +523,9 @@ export default function Customizer() {
                 title={c.label}
                 aria-label={c.label}
                 className={`h-9 w-9 rounded-full border-2 transition ${
-                  letterColorId === c.id ? "border-gold scale-110" : "border-line"
+                  letterColorId === c.id
+                    ? "border-gold scale-110"
+                    : "border-line"
                 }`}
                 style={{ backgroundColor: c.hex }}
               />
@@ -509,7 +535,9 @@ export default function Customizer() {
 
         {(isLineJacket || isPhotoStandard) && (
           <section>
-            <h2 className="font-display text-lg mb-3">{stepNum()}. Letter Background Color</h2>
+            <h2 className="font-display text-lg mb-3">
+              {stepNum()}. Letter Background Color
+            </h2>
             <div className="flex flex-wrap gap-3">
               {LETTER_BACKGROUNDS.map((c) => (
                 <button
@@ -518,7 +546,9 @@ export default function Customizer() {
                   title={c.label}
                   aria-label={c.label}
                   className={`h-9 w-9 rounded-full border-2 transition ${
-                    backgroundColorId === c.id ? "border-gold scale-110" : "border-line"
+                    backgroundColorId === c.id
+                      ? "border-gold scale-110"
+                      : "border-line"
                   } ${c.hex === null ? "bg-[repeating-conic-gradient(#ddd_0%_25%,white_0%_50%)] bg-[length:8px_8px]" : ""}`}
                   style={c.hex ? { backgroundColor: c.hex } : undefined}
                 />
@@ -530,7 +560,9 @@ export default function Customizer() {
         {isLineJacket || isPhotoStandard ? (
           <>
             <section>
-              <h2 className="font-display text-lg mb-3">{stepNum()}. Letter Style</h2>
+              <h2 className="font-display text-lg mb-3">
+                {stepNum()}. Letter Style
+              </h2>
               <div className="grid grid-cols-2 gap-3">
                 {LETTER_STYLES.map((s) => (
                   <button
@@ -544,7 +576,12 @@ export default function Customizer() {
                   >
                     <span
                       className="block text-2xl leading-tight"
-                      style={{ fontFamily: resolveLetterStylePreviewFont(s.id, letters) }}
+                      style={{
+                        fontFamily: resolveLetterStylePreviewFont(
+                          s.id,
+                          letters,
+                        ),
+                      }}
                     >
                       {letters.trim() || "ΑΒΓ"}
                     </span>
@@ -559,7 +596,9 @@ export default function Customizer() {
 
             {isLineJacket && (
               <section>
-                <h2 className="font-display text-lg mb-3">{stepNum()}. Stitch Style</h2>
+                <h2 className="font-display text-lg mb-3">
+                  {stepNum()}. Stitch Style
+                </h2>
                 <div className="grid grid-cols-2 gap-3">
                   {STITCH_STYLES.map((s) => (
                     <button
@@ -581,9 +620,12 @@ export default function Customizer() {
           </>
         ) : (
           <section>
-            <h2 className="font-display text-lg mb-3">{stepNum()}. Font & Finish</h2>
+            <h2 className="font-display text-lg mb-3">
+              {stepNum()}. Font & Finish
+            </h2>
             <div className="grid grid-cols-2 gap-3">
               <select
+                aria-label="Letter font"
                 value={fontId}
                 onChange={(e) => setFontId(e.target.value)}
                 className="rounded-xl border border-line bg-white px-3 py-2 text-sm"
@@ -595,6 +637,7 @@ export default function Customizer() {
                 ))}
               </select>
               <select
+                aria-label="Letter outline"
                 value={outline}
                 onChange={(e) => setOutline(e.target.value as LetterOutline)}
                 className="rounded-xl border border-line bg-white px-3 py-2 text-sm"
@@ -610,9 +653,11 @@ export default function Customizer() {
         )}
 
         <section>
-          <h2 className="font-display text-lg mb-3">{stepNum()}. Size & Quantity</h2>
+          <h2 className="font-display text-lg mb-3">
+            {stepNum()}. Size & Quantity
+          </h2>
           <div className="flex flex-wrap items-center gap-4">
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {SIZES.map((s) => {
                 const upcharge = garment.sizeUpcharges?.[s] ?? 0;
                 return (
@@ -637,6 +682,7 @@ export default function Customizer() {
             </div>
             <div className="flex items-center gap-2">
               <button
+                aria-label="Decrease quantity"
                 onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                 className="h-9 w-9 rounded-lg border border-line bg-white text-lg"
               >
@@ -644,6 +690,7 @@ export default function Customizer() {
               </button>
               <span className="w-6 text-center font-medium">{quantity}</span>
               <button
+                aria-label="Increase quantity"
                 onClick={() => setQuantity((q) => Math.min(24, q + 1))}
                 className="h-9 w-9 rounded-lg border border-line bg-white text-lg"
               >
