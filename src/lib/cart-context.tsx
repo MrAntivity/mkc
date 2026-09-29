@@ -4,6 +4,10 @@ import { createContext, useContext, useMemo, useState, ReactNode } from "react";
 
 export type CartLine = {
   id: string;
+  productHandle?: string;
+  sourceUrl?: string;
+  artwork?: { field: string; file: File }[];
+  selections?: { name: string; value: string }[];
   garmentName: string;
   garmentColorName: string;
   letters: string;
@@ -12,6 +16,7 @@ export type CartLine = {
   placement: string;
   size: string;
   quantity: number;
+  quantityLocked?: boolean;
   price: number;
   previewDataUrl?: string;
   stitchLabel?: string;
@@ -47,19 +52,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const updateQuantity = (id: string, quantity: number) => {
     setLines((prev) =>
       prev.map((line) =>
-        line.id === id ? { ...line, quantity: Math.max(1, quantity) } : line
-      )
+        line.id === id ? { ...line, quantity: Math.max(1, quantity) } : line,
+      ),
     );
   };
 
   const subtotal = useMemo(
     () => lines.reduce((sum, line) => sum + line.price * line.quantity, 0),
-    [lines]
+    [lines],
   );
 
   const count = useMemo(
     () => lines.reduce((sum, line) => sum + line.quantity, 0),
-    [lines]
+    [lines],
   );
 
   return (

@@ -101,8 +101,7 @@ export default function Customizer({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { addLine } = useCart();
 
-  const [garmentTypeId, setGarmentTypeId] =
-    useState<GarmentTypeId>(initialGarment);
+  const [garmentTypeId] = useState<GarmentTypeId>(initialGarment);
   const [colorId, setColorId] = useState("navy");
   const [jacketColorId, setJacketColorId] = useState(JACKET_COLORS[0].id);
   const [teeColorId, setTeeColorId] = useState(TEE_COLORS[0].id);
@@ -369,28 +368,6 @@ export default function Customizer({
 
       {/* Controls */}
       <div className="space-y-8">
-        <section>
-          <h2 className="font-display text-lg mb-3">
-            {stepNum()}. Choose Garment
-          </h2>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {GARMENT_TYPES.map((g) => (
-              <button
-                key={g.id}
-                onClick={() => setGarmentTypeId(g.id)}
-                className={`rounded-xl border px-3 py-3 text-sm font-medium transition ${
-                  garmentTypeId === g.id
-                    ? "border-navy bg-navy text-cream"
-                    : "border-line bg-white hover:border-navy/40"
-                }`}
-              >
-                {g.label}
-                <div className="text-xs opacity-70">${g.basePrice}</div>
-              </button>
-            ))}
-          </div>
-        </section>
-
         <section>
           <h2 className="font-display text-lg mb-3">
             {stepNum()}. Garment Color

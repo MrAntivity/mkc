@@ -18,7 +18,7 @@ const bodyFont = Inter({
 export const metadata: Metadata = {
   title: "MKC THREADS | Custom Greek Letter Apparel",
   description:
-    "MKC THREADS designs custom Greek letter apparel for fraternities and sororities. Build your look and preview it in real time before you order.",
+    "MKC THREADS designs custom Greek letter apparel for fraternities and sororities. Explore the complete catalog and personalize each product with its own colors, lettering, and embroidery options.",
 };
 
 export default function RootLayout({
