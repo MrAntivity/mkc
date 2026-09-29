@@ -1,3 +1,4 @@
+import type { RenderData } from "./live-preview";
 export type Rule = {
   category?: string;
   option?: string;
@@ -38,6 +39,7 @@ export type Panel = {
   fields: Field[];
 };
 export type ProductOptions = {
+  render?: RenderData;
   source: string;
   basePrice: number | string;
   panels: Panel[];
