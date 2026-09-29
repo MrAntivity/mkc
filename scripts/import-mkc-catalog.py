@@ -21,7 +21,13 @@ def logic(value, panel_id):
 
 def import_product(p):
     config_url = CDN + str(p['id']) + '.json'
-    raw = json.loads(fetch(config_url))
+    for attempt in range(3):
+        try:
+            raw = json.loads(fetch(config_url))
+            break
+        except (json.JSONDecodeError, subprocess.CalledProcessError):
+            if attempt == 2: raise RuntimeError(f'Could not import {p["handle"]}: {config_url}')
+            time.sleep(1)
     panels = []
     for panel in raw['data'].get('panels', []):
         fields=[]
@@ -32,7 +38,15 @@ def import_product(p):
                 choices.append({'id':o['id'], 'label':plain(d.get('label') or d.get('value') or c.get('title')), 'value':d.get('value'), 'price':o.get('price',0), 'inStock':o.get('inStock',True), 'logic':logic(o.get('logic'),panel['id']), 'settings':{k:d[k] for k in ['inputLengthValue','inputMinLengthValue','inputMinValue','inputMaxValue','inputStep','chargePerCharacter','useCustomCharacterPrcies','countSpaceAsCharacter','customCharacterPrices','defaultSelectValue'] if k in d}})
             fields.append({'id':panel['id']+':'+c['id'],'title':plain(c.get('title')),'type':c.get('type'),'display':c.get('display'),'required':c.get('required',False),'description':plain(c.get('description')),'logic':logic(c.get('logic'),panel['id']),'options':choices})
         panels.append({'id':panel['id'],'title':plain(panel.get('title')),'logic':logic(panel.get('logic'),panel['id']),'fields':fields})
-    config={'source':config_url,'basePrice':raw['data'].get('price'),'panels':panels}
+    render = {'base': raw['data'].get('base', {}).get('image', {}), 'images': [], 'regions': []}
+    for layer in raw['data'].get('customLayers', []):
+        item = {'id':layer['id'], 'title':plain(layer.get('title')), 'view':layer.get('view','front'), 'logic':logic(layer.get('logic'),layer.get('selectPanel') or ''), 'points':layer.get('points', [])}
+        if layer.get('type') == 'img' and layer.get('image', {}).get('defaultValue'):
+            item['url'] = layer['image']['defaultValue']
+            render['images'].append(item)
+        elif layer.get('type') == 'path':
+            render['regions'].append(item)
+    config={'source':config_url,'basePrice':raw['data'].get('price'),'panels':panels,'render':render}
     dest=ROOT/'public/catalog/options';dest.mkdir(parents=True,exist_ok=True)
     (dest/(p['handle']+'.json')).write_text(json.dumps(config,ensure_ascii=False,separators=(',',':')))
     title=p['title']

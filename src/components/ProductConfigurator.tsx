@@ -1,6 +1,8 @@
 "use client";
-import { useState, type FormEvent } from "react";
+import { useState, useRef, useCallback, type FormEvent } from "react";
 import Image from "next/image";
+import LivePreview from "./LivePreview";
+import { inferView, type View } from "@/lib/live-preview";
 import Link from "next/link";
 import type { CatalogProduct } from "@/lib/catalog";
 import {
@@ -36,7 +38,15 @@ export default function ProductConfigurator({
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
   const [error, setError] = useState("");
-  const [image, setImage] = useState(product.image);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [view, setView] = useState<View>("front");
+  const [activeField, setActiveField] = useState("");
+  const [previewReady, setPreviewReady] = useState(false);
+  const [previewFailed, setPreviewFailed] = useState(false);
+  const onPreviewReady = useCallback((ready: boolean, failed = false) => {
+    setPreviewReady(ready);
+    setPreviewFailed(failed);
+  }, []);
   const { addLine } = useCart();
   const panels = visiblePanels(config, values);
   const fields = panels.flatMap((p) => p.fields);
@@ -51,6 +61,10 @@ export default function ProductConfigurator({
     ? Object.values(quantities).reduce((a, b) => a + b, 0)
     : quantity;
   function change(id: string, value: string) {
+    setPreviewReady(false);
+    setActiveField(id);
+    const panel = config.panels.find((p) => p.fields.some((f) => f.id === id));
+    if (panel && !/base/i.test(panel.title)) setView(inferView(panel.title));
     setValues((current) => cleanValues(config, { ...current, [id]: value }));
     setAdded(false);
     setError("");
@@ -84,6 +98,14 @@ export default function ProductConfigurator({
           }
         : s,
     );
+    let preview = product.image;
+    if (previewReady && canvasRef.current) {
+      try {
+        preview = canvasRef.current.toDataURL("image/png");
+      } catch {
+        /* Preserve design when a remote CDN prevents canvas export. */
+      }
+    }
     addLine({
       garmentName: product.title,
       garmentColorName: "",
@@ -95,7 +117,7 @@ export default function ProductConfigurator({
       quantity: count,
       quantityLocked: Boolean(wholesale),
       price: unitPrice,
-      previewDataUrl: product.image,
+      previewDataUrl: preview,
       productHandle: product.handle,
       sourceUrl: product.source,
       selections,
@@ -245,34 +267,22 @@ export default function ProductConfigurator({
       </div>
       <div className="product-detail-layout">
         <aside className="product-preview">
-          <div className="product-reference">
-            <Image
-              src={image}
-              alt={product.title}
-              width={800}
-              height={900}
-              priority
-            />
-            <span>MKC PRODUCT EXAMPLE</span>
-          </div>
-          {product.images.length > 1 && (
-            <div className="product-thumbnails">
-              {product.images.slice(0, 8).map((src, i) => (
-                <button
-                  key={src}
-                  onClick={() => setImage(src)}
-                  aria-label={`View product image ${i + 1}`}
-                  aria-pressed={image === src}
-                >
-                  <Image src={src} alt="" width={65} height={75} />
-                </button>
-              ))}
-            </div>
-          )}
-          <p className="reference-caption">
-            Product photography shows an example design. Your selections are
-            listed below; this is not a live production proof.
-          </p>
+          <LivePreview
+            product={product}
+            config={config}
+            values={values}
+            artwork={artwork}
+            view={view}
+            onViewChange={(next) => {
+              if (next !== view) {
+                setView(next);
+                setPreviewReady(false);
+              }
+            }}
+            activeField={activeField}
+            canvasRef={canvasRef}
+            onReady={onPreviewReady}
+          />
           {summary.length > 0 && (
             <div className="configuration-summary">
               <h2>Your details</h2>
@@ -371,8 +381,18 @@ export default function ProductConfigurator({
                   {error}
                 </p>
               )}
-              <button className="button button-dark" type="submit">
-                {added ? "Added to your design bag ✓" : "Add design to bag"}
+              <button
+                className="button button-dark"
+                type="submit"
+                disabled={!previewReady && !previewFailed}
+              >
+                {added
+                  ? "Added to your design bag ✓"
+                  : previewFailed
+                    ? "Save details without preview"
+                    : !previewReady
+                      ? "Preparing preview…"
+                      : "Add design to bag"}
                 <span>↗</span>
               </button>
               {added && (

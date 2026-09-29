@@ -1990,3 +1990,107 @@ h2 {
     margin-bottom: 25px;
   }
 }
+.live-preview {
+  background: #fff;
+  border: 1px solid var(--line);
+}
+.live-preview-toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 18px;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  border-bottom: 1px solid var(--line);
+}
+.live-preview-toolbar i {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: #6e8756;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+.live-preview canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.preview-views {
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+  padding: 14px;
+  border-top: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+.preview-views button {
+  font-size: 10px;
+  text-transform: capitalize;
+  border: 1px solid var(--line);
+  padding: 9px 13px;
+}
+.preview-views button[aria-pressed="true"] {
+  background: var(--navy);
+  color: white;
+}
+.preview-status {
+  font-size: 10px;
+  padding: 0 18px;
+  color: #567040;
+  line-height: 1.7;
+}
+.live-preview .reference-caption {
+  padding: 0 18px 12px;
+}
+.preview-item-select {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 18px;
+  font-size: 11px;
+  border-bottom: 1px solid var(--line);
+}
+.preview-item-select select {
+  padding: 8px;
+  background: #f3f2eb;
+  max-width: 70%;
+}
+.product-order-summary .button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+  transform: none;
+}
+@media (max-width: 650px) {
+  .product-detail .product-preview {
+    position: sticky;
+    top: 84px;
+    z-index: 20;
+    background: var(--background);
+    padding-bottom: 8px;
+  }
+  .live-preview canvas {
+    max-height: 240px;
+    object-fit: contain;
+  }
+  .live-preview-toolbar {
+    padding: 10px 12px;
+    font-size: 8px;
+  }
+  .preview-views {
+    padding: 7px;
+  }
+  .preview-views button {
+    padding: 6px 10px;
+  }
+  .live-preview .reference-caption {
+    display: none;
+  }
+  .preview-status {
+    font-size: 9px;
+    padding: 0 12px 8px;
+  }
+  .preview-item-select {
+    padding: 7px 12px;
+  }
+}
