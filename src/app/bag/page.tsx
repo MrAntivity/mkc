@@ -18,7 +18,7 @@ export default function BagPage() {
             <br />
             Your custom designs will appear here.
           </p>
-          <Link href="/customize" className="button button-dark">
+          <Link href="/catalog" className="button button-dark">
             Start creating <span>↗</span>
           </Link>
         </div>
@@ -33,17 +33,45 @@ export default function BagPage() {
                     src={line.previewDataUrl}
                     width={100}
                     height={125}
-                    alt={`${line.letters} on ${line.garmentName}`}
+                    alt={line.garmentName}
                   />
                 )}
                 <div>
                   <h2>{line.garmentName}</h2>
-                  <p>
-                    {line.garmentColorName} / {line.size} / {line.letters}
-                  </p>
-                  <p>
-                    {line.fontLabel} · {line.letterColorName} · {line.placement}
-                  </p>
+                  {line.selections ? (
+                    <details className="bag-selections">
+                      <summary>
+                        {line.selections.length} customization details
+                      </summary>
+                      <dl>
+                        {line.selections.map((selection, index) => (
+                          <div key={index}>
+                            <dt>{selection.name}</dt>
+                            <dd>{selection.value}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                      {line.sourceUrl && (
+                        <a
+                          href={line.sourceUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          Open this product on MKC ↗
+                        </a>
+                      )}
+                    </details>
+                  ) : (
+                    <>
+                      <p>
+                        {line.garmentColorName} / {line.size} / {line.letters}
+                      </p>
+                      <p>
+                        {line.fontLabel} · {line.letterColorName} ·{" "}
+                        {line.placement}
+                      </p>
+                    </>
+                  )}
                   <p>${line.price.toFixed(2)} each</p>
                   <label>
                     Quantity
@@ -51,6 +79,7 @@ export default function BagPage() {
                       type="number"
                       min="1"
                       max="999"
+                      disabled={line.quantityLocked}
                       value={line.quantity}
                       onChange={(event) =>
                         updateQuantity(
@@ -66,6 +95,9 @@ export default function BagPage() {
                       }
                     />
                   </label>
+                  {line.quantityLocked && (
+                    <p>Quantity is set by your size breakdown.</p>
+                  )}
                   <button
                     onClick={() => removeLine(line.id)}
                     aria-label={`Remove ${line.garmentName} from bag`}

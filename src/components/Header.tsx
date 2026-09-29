@@ -25,16 +25,18 @@ export default function Header() {
           <nav aria-label="Main navigation" className="desktop-nav">
             <Link href="/#collections">Shop collections</Link>
             <Link
-              href="/customize"
-              aria-current={pathname === "/customize" ? "page" : undefined}
+              href="/catalog"
+              aria-current={
+                pathname.startsWith("/catalog") ? "page" : undefined
+              }
             >
-              Design studio
+              Catalog
             </Link>
             <Link href="/#how-it-works">How it works</Link>
             <Link href="/#about">Our world</Link>
           </nav>
           <div className="header-actions">
-            <Link href="/customize" className="header-cta">
+            <Link href="/catalog" className="header-cta">
               Make it yours <span aria-hidden="true">↗</span>
             </Link>
             <Link
@@ -82,8 +84,8 @@ export default function Header() {
             <Link onClick={close} href="/#collections">
               Shop collections ↗
             </Link>
-            <Link onClick={close} href="/customize">
-              Design studio ↗
+            <Link onClick={close} href="/catalog">
+              Catalog ↗
             </Link>
             <Link onClick={close} href="/#how-it-works">
               How it works ↗

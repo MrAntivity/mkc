@@ -15,7 +15,7 @@ export default function Footer() {
         </div>
         <div>
           <h2>Make it yours</h2>
-          <Link href="/customize">Greek apparel</Link>
+          <Link href="/catalog">Greek apparel</Link>
           <a href="https://www.stolesupply.com/">Graduation stoles ↗</a>
           <a href="https://mkcthreads.deco-apparel.com/">Custom apparel ↗</a>
           <a href="https://mkcthreads.espwebsites.com/">
@@ -35,7 +35,7 @@ export default function Footer() {
             Starts with
             <br />a great thread.
           </h3>
-          <Link href="/customize" className="text-link">
+          <Link href="/catalog" className="text-link">
             Let’s make something <span>↗</span>
           </Link>
         </div>

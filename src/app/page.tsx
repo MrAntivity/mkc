@@ -14,7 +14,7 @@ const products = [
   {
     name: "The Everyday Tee",
     category: "Your letters. On repeat.",
-    price: 24,
+    price: 15,
     id: "tee",
     image: "/products/classic-tee/sand.jpg",
     colors: ["#c7b899", "#202020", "#859baf", "#fafafa"],
@@ -30,7 +30,7 @@ const products = [
   {
     name: "The Campus Tee",
     category: "An everyday essential",
-    price: 24,
+    price: 15,
     id: "tee",
     image: "/products/classic-tee/forest-green.jpg",
     colors: ["#284b35", "#533861", "#a1afbc", "#222"],
@@ -57,7 +57,7 @@ export default function Home() {
             that feels as good as belonging.
           </p>
           <div className="hero-buttons">
-            <Link href="/customize" className="button button-dark">
+            <Link href="/catalog" className="button button-dark">
               Create your own <span>↗</span>
             </Link>
             <a href="#collections" className="text-link">
@@ -108,7 +108,7 @@ export default function Home() {
               <strong>The Line Jacket</strong>
             </span>
             <Link
-              href="/customize?garment=lineJacket"
+              href="/catalog/greek-line-jacket"
               aria-label="Customize the Line Jacket"
             >
               ↗
@@ -146,7 +146,7 @@ export default function Home() {
           </p>
         </div>
         <div className="collection-grid">
-          <Link href="/customize" className="collection-feature">
+          <Link href="/catalog" className="collection-feature">
             <div className="collection-image">
               <Image
                 src={withBasePath("/products/classic-tee/navy.jpg")}
@@ -221,8 +221,8 @@ export default function Home() {
                 Endless possibilities.
               </h2>
             </div>
-            <Link href="/customize" className="text-link">
-              Shop the design studio <span>↗</span>
+            <Link href="/catalog" className="text-link">
+              Shop the catalog <span>↗</span>
             </Link>
           </div>
           <div className="product-grid">
@@ -230,7 +230,11 @@ export default function Home() {
               <Link
                 className="product-card"
                 key={p.name}
-                href={`/customize?garment=${p.id}`}
+                href={
+                  p.id === "tee"
+                    ? "/catalog/greek-tshirt"
+                    : "/catalog/greek-line-jacket"
+                }
               >
                 <div className="product-image">
                   <span className="product-label">
@@ -297,7 +301,7 @@ export default function Home() {
             graduation stoles and something for your entire crew, MKC helps you
             wear what matters.
           </p>
-          <Link href="/customize" className="text-link">
+          <Link href="/catalog" className="text-link">
             Put your story on it <span>↗</span>
           </Link>
         </div>
@@ -312,8 +316,8 @@ export default function Home() {
               In every detail.
             </h2>
           </div>
-          <Link href="/customize" className="button button-dark">
-            Enter the design studio <span>↗</span>
+          <Link href="/catalog" className="button button-dark">
+            Enter the catalog <span>↗</span>
           </Link>
         </div>
         <div className="process-grid">
@@ -328,7 +332,7 @@ export default function Home() {
             },
             {
               title: "See your vision.",
-              body: "Explore a live design preview and collect your favorites in your design bag.",
+              body: "Review your product-specific details and collect your favorites in your design bag.",
             },
           ].map((step, i) => (
             <div key={step.title}>
@@ -355,8 +359,8 @@ export default function Home() {
             </summary>
             <p>
               Choose your garment, color, Greek letters, lettering style,
-              placement, size, and quantity in the design studio. Options vary
-              by garment.
+              placement, size, and quantity in the catalog. Options vary by
+              garment.
             </p>
           </details>
           <details>
@@ -375,7 +379,7 @@ export default function Home() {
           </details>
           <details>
             <summary>
-              Is the live preview a production proof?<span>+</span>
+              Are product images a production proof?<span>+</span>
             </summary>
             <p>
               The preview helps you explore your design. It is not a production
@@ -406,7 +410,7 @@ export default function Home() {
             <br />
             <i>mean something.</i>
           </h2>
-          <Link href="/customize" className="button button-light">
+          <Link href="/catalog" className="button button-light">
             Make it yours <span>↗</span>
           </Link>
           <span className="closing-star" aria-hidden="true">
