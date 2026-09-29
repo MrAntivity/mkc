@@ -263,13 +263,11 @@ function containsGreek(text: string): boolean {
   return /[Ͱ-Ͽἀ-῿]/.test(text);
 }
 
-// UnifrakturMaguntia (true blackletter) has no Greek glyphs, so "Old
-// English" falls back to an ornate high-contrast serif when the letters are
-// Greek. Standard uses one bold, Greek-safe font either way.
+// Use the reference Greek glyphs with a Latin blackletter fallback.
 export function resolveLetterStylePreviewFont(styleId: LetterStyleId, sampleText: string): string {
   if (styleId === "oldEnglish") {
     return containsGreek(sampleText)
-      ? oldEnglishGreekFont.style.fontFamily
+      ? `${oldEnglishGreekFont.style.fontFamily}, ${oldEnglishFont.style.fontFamily}`
       : oldEnglishFont.style.fontFamily;
   }
   return standardLetterFont.style.fontFamily;
@@ -278,7 +276,7 @@ export function resolveLetterStylePreviewFont(styleId: LetterStyleId, sampleText
 export function resolveLetterStyleCanvasFont(styleId: LetterStyleId, sampleText: string): string {
   if (styleId === "oldEnglish") {
     return containsGreek(sampleText)
-      ? `900 1em ${oldEnglishGreekFont.style.fontFamily}`
+      ? `400 1em ${oldEnglishGreekFont.style.fontFamily}, ${oldEnglishFont.style.fontFamily}`
       : `400 1em ${oldEnglishFont.style.fontFamily}`;
   }
   return `900 1em ${standardLetterFont.style.fontFamily}`;

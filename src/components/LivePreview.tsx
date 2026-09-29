@@ -136,7 +136,11 @@ export default function LivePreview({
       try {
         const current: ReturnType<typeof buildScene> = JSON.parse(signature);
         const base = await photo(current.base);
-        await document.fonts.ready;
+        await Promise.all([
+          document.fonts.load(`400 80px ${oldEnglishGreekFont.style.fontFamily}`, "ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ"),
+          document.fonts.load(`400 80px ${oldEnglishFont.style.fontFamily}`, "MKC"),
+          document.fonts.ready,
+        ]);
         if (cancelled) return;
         const scale = Math.min(900 / base.width, 900 / base.height);
         const photoWidth = base.width * scale,
@@ -192,7 +196,7 @@ export default function LivePreview({
             const isOld = /old english|gothic/i.test(mark.font);
             const family = isOld
               ? /[Α-ω]/.test(mark.text)
-                ? oldEnglishGreekFont.style.fontFamily
+                ? `${oldEnglishGreekFont.style.fontFamily}, ${oldEnglishFont.style.fontFamily}`
                 : oldEnglishFont.style.fontFamily
               : /script|brush|cursive/i.test(mark.font)
                 ? "cursive"
