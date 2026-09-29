@@ -1,20 +1,18 @@
 import type { Metadata } from "next";
-import { Inter, Oswald } from "next/font/google";
+import { Inter } from "next/font/google";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { CartProvider } from "@/lib/cart-context";
-import { oldEnglishFont, oldEnglishGreekFont, standardLetterFont } from "@/lib/fonts";
+import {
+  oldEnglishFont,
+  oldEnglishGreekFont,
+  standardLetterFont,
+} from "@/lib/fonts";
 import "./globals.css";
 
 const bodyFont = Inter({
   variable: "--font-body",
   subsets: ["latin"],
-});
-
-const displayFont = Oswald({
-  variable: "--font-display",
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -29,11 +27,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${bodyFont.variable} ${displayFont.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col bg-background text-foreground">
+    <html lang="en" className={`${bodyFont.variable} h-full antialiased`}>
+      <body
+        id="top"
+        className="min-h-full flex flex-col bg-background text-foreground"
+      >
         {/* Forces Next.js to inject the Line Jacket letter-style @font-faces,
             even though they're applied via canvas (not a React class) in
             Customizer.tsx. */}
@@ -42,9 +40,14 @@ export default function RootLayout({
           <span className={oldEnglishGreekFont.className}>ΑΒΓΔ</span>
           <span className={standardLetterFont.className}>ΑΒΓΔ</span>
         </span>
+        <a className="skip-link" href="#main-content">
+          Skip to content
+        </a>
         <CartProvider>
           <Header />
-          <main className="flex-1">{children}</main>
+          <main id="main-content" className="flex-1">
+            {children}
+          </main>
           <Footer />
         </CartProvider>
       </body>

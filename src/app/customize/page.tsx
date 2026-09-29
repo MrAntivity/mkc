@@ -1,22 +1,31 @@
-import Customizer from "@/components/Customizer";
+import { Suspense } from "react";
+import Link from "next/link";
+import Studio from "@/components/Studio";
 
 export default function CustomizePage() {
   return (
-    <div className="mx-auto max-w-6xl px-6 py-10">
-      <div className="mb-8">
-        <p className="text-sm font-semibold uppercase tracking-widest text-gold">
-          Design Studio
-        </p>
-        <h1 className="font-display text-3xl sm:text-4xl">
-          Build Your Custom Greek Apparel
-        </h1>
-        <p className="mt-2 max-w-2xl text-foreground/60">
-          Pick a garment, choose your colors, and add your letters. Your
-          preview updates instantly so you know exactly what you&apos;re
-          ordering.
+    <div className="studio-page">
+      <div className="studio-breadcrumb">
+        <Link href="/">Home</Link> / Design studio
+      </div>
+      <div className="studio-intro">
+        <div>
+          <p className="eyebrow">THE MKC DESIGN STUDIO</p>
+          <h1>
+            Your letters.
+            <br />
+            Your way.
+          </h1>
+        </div>
+        <p>
+          A little color. A personal touch. Choose your garment and bring your
+          chapter’s next favorite to life. Preview is illustrative; final
+          details may vary.
         </p>
       </div>
-      <Customizer />
+      <Suspense fallback={<p>Preparing your design studio…</p>}>
+        <Studio />
+      </Suspense>
     </div>
   );
 }

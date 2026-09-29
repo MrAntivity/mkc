@@ -1,52 +1,99 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { useCart } from "@/lib/cart-context";
+import Brand from "./Brand";
 
 export default function Header() {
   const { count } = useCart();
-
+  const [menuOpen, setMenuOpen] = useState(false);
+  const pathname = usePathname();
+  const close = () => setMenuOpen(false);
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-navy text-cream">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        <Link href="/" className="flex items-center gap-2">
-          <span className="font-display text-2xl tracking-wide">
-            MKC <span className="text-gold">THREADS</span>
-          </span>
-        </Link>
-
-        <nav className="hidden items-center gap-8 text-sm font-medium tracking-wide uppercase md:flex">
-          <Link href="/" className="transition hover:text-gold">
-            Home
-          </Link>
-          <Link href="/customize" className="transition hover:text-gold">
-            Customize
-          </Link>
-          <a href="#organizations" className="transition hover:text-gold">
-            Organizations
-          </a>
-          <a href="#about" className="transition hover:text-gold">
-            About
-          </a>
-        </nav>
-
-        <div className="flex items-center gap-4">
-          <Link
-            href="/customize"
-            className="hidden rounded-full bg-gold px-5 py-2 text-sm font-semibold text-navy transition hover:bg-gold-light sm:inline-block"
-          >
-            Start Designing
-          </Link>
-          <span className="relative text-sm">
-            🛍
-            {count > 0 && (
-              <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-gold text-[10px] font-bold text-navy">
-                {count}
-              </span>
-            )}
-          </span>
-        </div>
+    <>
+      <div className="announcement">
+        Made for your letters. Made for your people.{" "}
+        <a href="https://mkcthreads.com/" target="_blank" rel="noreferrer">
+          Current production times <span aria-hidden="true">↗</span>
+        </a>
       </div>
-    </header>
+      <header className="site-header">
+        <div className="header-inner">
+          <Brand />
+          <nav aria-label="Main navigation" className="desktop-nav">
+            <Link href="/#collections">Shop collections</Link>
+            <Link
+              href="/customize"
+              aria-current={pathname === "/customize" ? "page" : undefined}
+            >
+              Design studio
+            </Link>
+            <Link href="/#how-it-works">How it works</Link>
+            <Link href="/#about">Our world</Link>
+          </nav>
+          <div className="header-actions">
+            <Link href="/customize" className="header-cta">
+              Make it yours <span aria-hidden="true">↗</span>
+            </Link>
+            <Link
+              href="/bag"
+              className="bag-link"
+              aria-label={`Shopping bag, ${count} items`}
+            >
+              <svg
+                width="21"
+                height="23"
+                viewBox="0 0 24 26"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M4 8h16l1 15H3L4 8Z"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                />
+                <path
+                  d="M8 9V6a4 4 0 0 1 8 0v3"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                />
+              </svg>
+              <span>{count}</span>
+            </Link>
+            <button
+              className="menu-toggle"
+              aria-expanded={menuOpen}
+              aria-controls="mobile-menu"
+              onClick={() => setMenuOpen(!menuOpen)}
+              aria-label={menuOpen ? "Close navigation" : "Open navigation"}
+            >
+              {menuOpen ? "✕" : "☰"}
+            </button>
+          </div>
+        </div>
+        {menuOpen && (
+          <nav
+            id="mobile-menu"
+            aria-label="Mobile navigation"
+            className="mobile-nav"
+          >
+            <Link onClick={close} href="/#collections">
+              Shop collections ↗
+            </Link>
+            <Link onClick={close} href="/customize">
+              Design studio ↗
+            </Link>
+            <Link onClick={close} href="/#how-it-works">
+              How it works ↗
+            </Link>
+            <Link onClick={close} href="/#about">
+              Our world ↗
+            </Link>
+          </nav>
+        )}
+      </header>
+    </>
   );
 }

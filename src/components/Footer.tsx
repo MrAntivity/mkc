@@ -1,55 +1,49 @@
+import Link from "next/link";
+import Brand from "./Brand";
+
 export default function Footer() {
   return (
-    <footer id="about" className="border-t border-line bg-navy text-cream/80">
-      <div className="mx-auto max-w-7xl px-6 py-12">
-        <div className="grid gap-10 md:grid-cols-3">
-          <div>
-            <span className="font-display text-xl text-cream">
-              MKC <span className="text-gold">THREADS</span>
-            </span>
-            <p className="mt-3 max-w-xs text-sm text-cream/70">
-              Custom Greek letter apparel for fraternities and sororities.
-              Design it, preview it, wear it.
-            </p>
-          </div>
-
-          <div>
-            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gold">
-              Shop
-            </h3>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <a href="/customize" className="hover:text-gold">
-                  Customize Apparel
-                </a>
-              </li>
-              <li>
-                <a href="#organizations" className="hover:text-gold">
-                  Organizations
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gold">
-              Support
-            </h3>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <a href="mailto:hello@mkcthreads.com" className="hover:text-gold">
-                  hello@mkcthreads.com
-                </a>
-              </li>
-              <li>Sizing Guide</li>
-              <li>Order Status</li>
-            </ul>
-          </div>
+    <footer className="site-footer">
+      <div className="footer-top shell">
+        <div>
+          <Brand />
+          <p>
+            For the moments that bring us together.
+            <br />
+            For the threads that make us, us.
+          </p>
         </div>
-
-        <div className="mt-10 border-t border-white/10 pt-6 text-xs text-cream/50">
-          © {new Date().getFullYear()} MKC THREADS. All rights reserved.
+        <div>
+          <h2>Make it yours</h2>
+          <Link href="/customize">Greek apparel</Link>
+          <a href="https://www.stolesupply.com/">Graduation stoles ↗</a>
+          <a href="https://mkcthreads.deco-apparel.com/">Custom apparel ↗</a>
+          <a href="https://mkcthreads.espwebsites.com/">
+            Promotional products ↗
+          </a>
         </div>
+        <div>
+          <h2>A little guidance</h2>
+          <Link href="/#how-it-works">How it works</Link>
+          <Link href="/#faq">Frequently asked questions</Link>
+          <a href="https://mkcthreads.com/">Visit the original store ↗</a>
+          <Link href="/bag">Your design bag</Link>
+        </div>
+        <div className="footer-note">
+          <span className="eyebrow">YOUR NEXT CHAPTER</span>
+          <h3>
+            Starts with
+            <br />a great thread.
+          </h3>
+          <Link href="/customize" className="text-link">
+            Let’s make something <span>↗</span>
+          </Link>
+        </div>
+      </div>
+      <div className="footer-bottom shell">
+        <span>© {new Date().getFullYear()} MKC Threads.</span>
+        <span>Custom apparel. Collective identity.</span>
+        <a href="#top">Back to top ↑</a>
       </div>
     </footer>
   );
